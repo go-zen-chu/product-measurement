@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:8.0.31
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: local
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+      TZ: 'Asia/Tokyo'
+    command: mysqld
+    volumes:
+      - db-store:/var/lib/mysql
+      - ./db/mysql/logs:/var/log/mysql
+      - ./db/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - 3306:3306
+
+# docker compose stores mysql data below
+# check docker volume ls 
+volumes:
+  db-store:

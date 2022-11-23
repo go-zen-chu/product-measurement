@@ -1,0 +1,12 @@
+import:
+  files:
+    - type: excel
+      path: "/Users/you/Desktop/test.xlsx"
+      sheet: "Sheet1"
+      columns:
+        - name: "col1"
+          type: int
+      # if columns specified, not able to specify rows
+      # rows:
+      #   - name: "row1"
+      #     type: int
