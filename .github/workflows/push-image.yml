@@ -21,7 +21,7 @@ jobs:
       - name: publish image with timestamp
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
-          image: amasuda/issue2md
+          image: amasuda/product-measurement
           addTimestamp: true
           registry: docker.io # TIPS: hub.docker.com is website and not appropriate
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -29,7 +29,7 @@ jobs:
       - name: publish image with latest tag
         uses: mr-smithers-excellent/docker-build-push@v5
         with:
-          image: amasuda/issue2md
+          image: amasuda/product-measurement
           tags: latest
           registry: docker.io
           username: ${{ secrets.DOCKER_USERNAME }}
