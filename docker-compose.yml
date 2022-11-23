@@ -5,7 +5,7 @@ services:
     image: mysql:8.0.31
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: local
       MYSQL_USER: docker
       MYSQL_PASSWORD: docker
@@ -13,10 +13,17 @@ services:
     command: mysqld
     volumes:
       - db-store:/var/lib/mysql
-      - ./db/mysql/logs:/var/log/mysql
-      - ./db/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./compose/mysql/logs:/var/log/mysql
+      - ./compose/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     ports:
       - 3306:3306
+  vis:
+    image: registry.hub.docker.com/grafana/grafana-oss:9.2.6
+    container_name: grafana
+    volumes:
+      - ./compose/grafana:/var/lib/grafana
+    ports:
+      - 3000:3000
 
 # docker compose stores mysql data below
 # check docker volume ls 
