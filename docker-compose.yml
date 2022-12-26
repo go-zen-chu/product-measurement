@@ -18,7 +18,7 @@ services:
     ports:
       - 3306:3306
   vis:
-    image: registry.hub.docker.com/grafana/grafana-oss:9.2.6
+    image: grafana/grafana-oss:9.2.6
     container_name: grafana
     volumes:
       - ./compose/grafana:/var/lib/grafana

@@ -3,6 +3,8 @@
 /excel-importer
 # docker-compose
 compose/mysql/logs
+compose/grafana
+
 /config.yaml
 /*.csv
 
