@@ -8,10 +8,9 @@ spec:
   selector:
     app: mysql
   ports:
-  - protocol: TCP
-    port: 3306
-    targetPort: 3306
-  clusterIP: None
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -88,35 +87,42 @@ spec:
         app: mysql
     spec:
       containers:
-      - image: mysql:8.0.31
-        name: mysql
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: rootpassword
-        - name: MYSQL_DATABASE
-          value: product-measurement
-        - name: MYSQL_USER
-          value: pm
-        - name: MYSQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: password
-        ports:
-        - containerPort: 3306
+        - image: mysql:8.0.31
           name: mysql
-        volumeMounts:
-        - name: mysql-persistent-storage
-          mountPath: /var/lib/mysql
-        - name: mysql-config-volume
-          mountPath: /etc/mysql/conf.d/
+          ports:
+            - containerPort: 3306
+              name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: rootpassword
+            - name: MYSQL_DATABASE
+              value: product-measurement
+            - name: MYSQL_USER
+              value: pm
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+            - name: mysql-config-volume
+              mountPath: /etc/mysql/conf.d/
+          resources:
+            requests:
+              cpu: 250m
+              memory: 500Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
       volumes:
-      - name: mysql-persistent-storage
-        persistentVolumeClaim:
-          claimName: mysql-pv-claim
-      - name: mysql-config-volume
-        configMap:
-          name: mysql-config
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+        - name: mysql-config-volume
+          configMap:
+            name: mysql-config
