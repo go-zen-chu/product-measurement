@@ -1,12 +1,14 @@
-import:
-  files:
-    - type: excel
-      path: "/Users/you/Desktop/test.xlsx"
-      sheet: "Sheet1"
-      columns:
-        - name: "col1"
-          type: int
-      # if columns specified, not able to specify rows
-      # rows:
-      #   - name: "row1"
-      #     type: int
+excel:
+  - path: "/Users/xxxx/aaa.xlsx"
+    sheet: "Sheet 1"
+    columns:
+      - name: "Key"
+        type: int
+jira:
+  # JIRA API might be multiple for visualizing multi projects
+  - endpoint: "xxx"
+    project: "xxx"
+    auth:
+      user: xxx
+      password: yyyy
+    import-from: "1M"

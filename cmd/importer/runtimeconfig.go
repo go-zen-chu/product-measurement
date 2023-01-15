@@ -8,21 +8,21 @@ import (
 )
 
 const (
-	appName = "excel-importer"
+	appName = "importer"
 )
 
 var (
-	flgSet           = flag.NewFlagSet(appName, flag.ExitOnError)
-	debugVal         = flgSet.Bool("debug", false, "Enable debug")
-	helpVal          = flgSet.Bool("help", false, "Show help")
-	excelFilePathVal *pathValue
+	flgSet            = flag.NewFlagSet(appName, flag.ExitOnError)
+	debugVal          = flgSet.Bool("debug", false, "Enable debug")
+	helpVal           = flgSet.Bool("help", false, "Show help")
+	configFilePathVal *pathValue
 )
 
 func init() {
-	excelFilePathVal = &pathValue{
+	configFilePathVal = &pathValue{
 		path: "",
 	}
-	flgSet.Var(excelFilePathVal, "excel-file-path", "Set excel file path")
+	flgSet.Var(configFilePathVal, "config-path", "Set configuration file path")
 }
 
 func HelpString() string {
@@ -30,30 +30,26 @@ func HelpString() string {
 	sb.WriteString("usage: ")
 	sb.WriteString(appName)
 	sb.WriteString(" <flags>\n")
+	// set print setting to string builder
 	op := flgSet.Output()
 	flgSet.SetOutput(&sb)
-	// print to string builder
 	flgSet.PrintDefaults()
 	flgSet.SetOutput(op)
 	return sb.String()
 }
 
-type config struct {
-	debug         bool
-	help          bool
-	excelFilePath string
+type runtimeConfig struct {
+	debug          bool
+	help           bool
+	configFilePath string
 }
 
-func NewConfig() *config {
-	// return default config
-	return &config{
-		debug:         false,
-		help:          false,
-		excelFilePath: "",
-	}
+// NewRuntimeConfig generate default config
+func NewRuntimeConfig() *runtimeConfig {
+	return &runtimeConfig{}
 }
 
-func (c *config) LoadCommandArgs(args []string) error {
+func (c *runtimeConfig) LoadCommandArgs(args []string) error {
 	if !flgSet.Parsed() {
 		if len(args) <= 1 {
 			return fmt.Errorf("invalid args len: %d", len(os.Args))
@@ -68,8 +64,8 @@ func (c *config) LoadCommandArgs(args []string) error {
 				c.debug = *debugVal
 			case "help":
 				c.help = *helpVal
-			case "excel-file-path":
-				c.excelFilePath = excelFilePathVal.path
+			case "config-path":
+				c.configFilePath = configFilePathVal.path
 			}
 		})
 	}

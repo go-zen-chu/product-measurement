@@ -1,6 +1,5 @@
 # binary
 /db-setup
-/excel-importer
 /config.yaml
 /*.csv
 
