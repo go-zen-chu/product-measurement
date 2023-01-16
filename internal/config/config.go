@@ -3,17 +3,17 @@ package config
 import (
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Config is global configuration for this application
 type Config struct {
-	Excel *Excel `yaml:"excel"`
-	Jira  *Jira  `yaml:"jira"`
+	Excel *Excel `yaml:",inline"`
+	Jira  *Jira  `yaml:",inline"`
 }
 
 type Excel struct {
-	ExcelConfig []ExcelConfig
+	ExcelConfig []ExcelConfig `yaml:"excel"`
 }
 
 type ExcelConfig struct {
@@ -22,7 +22,7 @@ type ExcelConfig struct {
 }
 
 type Jira struct {
-	JiraConfig []JiraConfig
+	JiraConfig []JiraConfig `yaml:"jira"`
 }
 
 type JiraConfig struct {
@@ -40,7 +40,7 @@ func (c *Config) LoadFromFile(filePath string) error {
 	if err != nil {
 		return err
 	}
-	// TODO: should be overwrite old value, not replace
+	// TODO: it should overwrite old value, not replace
 	if err := yaml.Unmarshal(b, &c); err != nil {
 		return err
 	}

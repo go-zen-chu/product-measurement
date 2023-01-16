@@ -11,6 +11,7 @@ import (
 	"github.com/go-zen-chu/product-measurement/internal/log"
 )
 
+// Runner defines interface for running general applications
 type Runner interface {
 	// TODO: LoadFromEnvVars() error
 	LoadFromCommandArgs(args []string) error
@@ -112,6 +113,7 @@ func (r *runner) Run() error {
 	if err := log.Init(r.debug); err != nil {
 		return err
 	}
+	log.Debugf("[Run] config: %+v", r.cnf)
 	subCommandArgs := r.args[1+r.flgSet.NFlag():] // NFlag is number of flags for root command
 	if len(subCommandArgs) == 0 {
 		if r.commandHandler == nil {

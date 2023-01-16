@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/go-zen-chu/product-measurement/internal/config"
+	"github.com/go-zen-chu/product-measurement/internal/log"
 	"github.com/go-zen-chu/product-measurement/internal/runner"
 	"github.com/go-zen-chu/product-measurement/usecase/kpi"
 	"github.com/go-zen-chu/product-measurement/usecase/schedule"
@@ -21,6 +22,6 @@ func main() {
 		return schedule.ImportJira(c)
 	})
 	if err := runner.Run(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
