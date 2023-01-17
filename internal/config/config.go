@@ -26,8 +26,15 @@ type Jira struct {
 }
 
 type JiraConfig struct {
-	Endpoint string `yaml:"endpoint"`
-	Project  string `yaml:"project"`
+	Endpoint string    `yaml:"endpoint"`
+	Project  string    `yaml:"project"`
+	JiraAuth *JiraAuth `yaml:"auth"`
+}
+
+type JiraAuth struct {
+	Method   string `yaml:"method"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
 }
 
 // NewConfig generate default config
