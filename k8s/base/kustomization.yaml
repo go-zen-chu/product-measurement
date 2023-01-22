@@ -4,9 +4,6 @@ namespace: product-measurement
 resources:
   - ./namespace.yaml
   - ./mysql.yaml
+  # grafana
   - ./grafana.yaml
-
-configMapGenerator:
-  - name: grafana-dashboard-scheduling
-    files:
-      - ../../dashboards/scheduling.json
+  - ../../dashboards/

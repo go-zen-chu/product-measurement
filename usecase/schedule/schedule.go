@@ -31,12 +31,12 @@ func ImportJira(config *config.Config) error {
 				return fmt.Errorf("unsupported method: %s", jcnf.JiraAuth.Method)
 			}
 		}
-		u, _, err := jc.User.GetSelf()
+		bl, _, err := jc.Board.GetAllBoards(nil)
+		if err != nil {
+			return err
+		}
 
-		fmt.Printf("Email: %v\n", u.EmailAddress)
-		fmt.Println("Success!")
-
-		log.Printf("%+v", u)
+		log.Printf("%+v", bl)
 		issue, _, err := jc.Issue.Get("TEST-1", nil)
 		if err != nil {
 			return fmt.Errorf("get issue: %w", err)
