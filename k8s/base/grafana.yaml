@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  labels:
+    app: grafana
+spec:
+  selector:
+    app: grafana
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+# https://grafana.com/docs/grafana/latest/administration/provisioning/
+# should be mounted to /etc/grafana/provisioning/datasources
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasource-config
+data:
+  datasource.yaml: |
+    apiVersion: 1
+    # list of datasources that should be deleted from the database
+    deleteDatasources:
+    - name: MySQL
+      orgId: 1
+    # list of datasources to insert/update depending whats available in the database
+    datasources:
+    - name: MySQL
+      # <string, required> datasource type. Required
+      type: mysql
+      # <int> org id. will default to orgId 1 if not specified
+      orgId: 1
+      # <string> url
+      url: jdbc:mysql://mysql.product-measurement.svc.cluster.local:3306
+      # <string> database user, if used
+      user: pm
+      # <string> database name, if used
+      database: product-measurement
+      # <bool> mark as default datasource. Max one per org
+      isDefault: true
+      # <map> fields that will be converted to json and stored in json_data
+      jsonData:
+        graphiteVersion: "1.1"
+        tlsAuth: false
+        tlsAuthWithCACert: false
+      # <string> json object of data that will be encrypted.
+      secureJsonData:
+        password: pmpassword
+      version: 1
+      # <bool> allow users to edit datasources from the UI.
+      editable: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provider-config
+  labels:
+    app: grafana
+data:
+  dashboards-providers.yaml: |
+    apiVersion: 1
+    providers:
+    - name: 'dashboards'
+      orgId: 1
+      type: file
+      disableDeletion: true
+      editable: true
+      options:
+        path: /etc/grafana/provisioning/dashboards
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grafana
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - image: registry.hub.docker.com/grafana/grafana-oss:9.2.6
+          imagePullPolicy: IfNotPresent
+          name: grafana
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: GF_INSTALL_PLUGINS
+              value: grafana-clock-panel,grafana-simple-json-datasource
+          volumeMounts:
+            - name: datasource-config-volume
+              mountPath: /etc/grafana/provisioning/datasources/
+            - name: dashboard-provider-config-volume
+              mountPath: /etc/grafana/provisioning/dashboards/
+            - name: dashboard-scheduling-volume
+              mountPath: /etc/grafana/provisioning/dashboards/scheduling.json
+          resources:
+            requests:
+              cpu: 250m
+              memory: 500Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: datasource-config-volume
+          configMap:
+            name: grafana-datasource-config
+        - name: dashboard-provider-config-volume
+          configMap:
+            name: grafana-dashboard-provider-config
+        - name: dashboard-scheduling-volume
+          configMap:
+            name: grafana-dashboard-scheduling
