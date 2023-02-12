@@ -1,6 +1,13 @@
+version: "0.1"
 excel:
-  - path: "/Users/xxxx/aaa.xlsx"
-    sheet: "Sheet 1"
+  # table1
+  - path: "./testdata/testdata.xlsx"
+    sheet: "Sheet1"
+    range:
+      leftTopCell: "B2"
+      rightBottomCell: "J6"
+    columnHeaderFormat: "2006/01"
+    rowHeaderFormat: "[a-zA-Z0-9]+"
     columns:
       - name: "Key"
         type: int

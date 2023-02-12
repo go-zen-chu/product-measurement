@@ -40,7 +40,8 @@ func genTempFile(fileName string, content string) (string, error) {
 
 func genValidYaml() (string, error) {
 	return genTempFile("valid.yaml",
-		`excel:
+		`version: "0.1"
+excel:
 - path: "/Users/xxxx/aaa.xlsx"
   sheet: "Sheet 1"
 jira:

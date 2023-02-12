@@ -8,8 +8,9 @@ import (
 
 // Config is global configuration for this application
 type Config struct {
-	Excel *Excel `yaml:",inline"`
-	Jira  *Jira  `yaml:",inline"`
+	Version string `yaml:"version"`
+	Excel   *Excel `yaml:",inline"`
+	Jira    *Jira  `yaml:",inline"`
 }
 
 type Excel struct {
