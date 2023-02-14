@@ -18,8 +18,14 @@ type Excel struct {
 }
 
 type ExcelConfig struct {
-	Path  string `yaml:"path"`
-	Sheet string `yaml:"sheet"`
+	Path  string      `yaml:"path"`
+	Sheet string      `yaml:"sheet"`
+	Range *ExcelRange `yaml:"range"`
+}
+
+type ExcelRange struct {
+	LeftTopCell     string `yaml:"leftTopCell"`
+	RightBottomCell string `yaml:"rightBottomCell"`
 }
 
 type Jira struct {
