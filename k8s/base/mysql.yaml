@@ -25,7 +25,6 @@ spec:
     requests:
       storage: 20Gi
 ---
-# replace secrets below when you use in production
 apiVersion: v1
 kind: Secret
 metadata:
@@ -34,6 +33,8 @@ metadata:
     app: mysql
 type: Opaque
 data:
+  # [WARNING!!!]
+  # replace secrets below when you use in production
   rootpassword: cm9vdHBhc3N3b3Jk # rootpassword
   password: cG1wYXNzd29yZA== # pmpassword
 ---

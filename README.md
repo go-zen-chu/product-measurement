@@ -3,23 +3,64 @@
 [![Actions Status](https://github.com/go-zen-chu/product-measurement/workflows/ci/badge.svg)](https://github.com/go-zen-chu/product-measurement/actions/workflows/ci.yml)
 [![Actions Status](https://github.com/go-zen-chu/product-measurement/workflows/push-image/badge.svg)](https://github.com/go-zen-chu/product-measurement/actions/workflows/push-image.yml)
 
-measure, visualize about your product
+Measure, visualize all about your products.
+
+## Design
 
 ![](docs/design.drawio.svg)
 
-## Use locally
+## Install
 
-### Using kind
+### Deploying to your local k8s cluster
 
-1. Install [kind](https://kind.sigs.k8s.io/)
-2. Run k8s cluster locally
-3. Deploy grafana, mysql to kind cluster
+1. Install [kind](https://kind.sigs.k8s.io/) or minikube that runs k8s cluster locally
+1. Deploy grafana, mysql to your local k8s cluster
 
     ```bash
     kubectl apply -k ./k8s/base
+    kubectl port-forward -nproduct-measurement svc/mysql 3306:3306
     ```
 
-## Develop
+### Deploy to production k8s cluster
+
+As above, deploy to your k8s cluster.
+If you want to store your data in external DB, you can edit your k8s manifests.
+
+## Usage
+
+### Import data from datasources
+
+First, you can test locally using [example-config.yaml](./example-config.yaml).
+
+```bash
+go run ./cmd/importer -config-path example-config.yaml -filter "sample spreadsheet"
+```
+
+If you want to try importing from API, copy and rename example-config.yaml and edit `jira` config.
+
+```bash
+cp ./example-config.yaml ./your_config.yaml
+# import data from datasource and store to DB
+./importer -config-path your_config.yaml 
+# import data specifying datasource
+./importer -config-path your_config.yaml -filter "sample project"
+```
+
+### Visualize data in Grafana
+
+Imported data is stored in DB (MySQL is only supported yet).
+You can visualize your data through SQL queries defined in your Grafana dashboards.
+
+-> [example dashboards](./dashboards/)
+
+```bash
+kubectl port-forward -nproduct-measurement svc/grafana 3000:3000
+
+# open your browser to see grafana
+open "http://localhost:3000"
+```
+
+## How to develop this project?
 
 ### JIRA
 

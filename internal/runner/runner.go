@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-zen-chu/product-measurement/internal/config"
@@ -16,35 +17,32 @@ type Runner interface {
 	// TODO: LoadFromEnvVars() error
 	LoadFromCommandArgs(args []string) error
 	SetCommandHandler(ch CommandHandler)
-	SetSubCommandHandler(subCommand string, ch CommandHandler)
 	Run() error
 }
 
 type CommandHandler func(c *config.Config) error
 
 type runner struct {
-	appName            string
-	args               []string
-	flgSet             *flag.FlagSet
-	debug              bool
-	help               bool
-	configFilePath     string
-	cnf                *config.Config
-	commandHandler     CommandHandler
-	subCommandHandlers map[string]CommandHandler
+	appName        string
+	args           []string
+	flgSet         *flag.FlagSet
+	debug          bool
+	help           bool
+	configFilePath string
+	cnf            *config.Config
+	commandHandler CommandHandler
 }
 
 func NewRunner(appName string) Runner {
 	flgSet := flag.NewFlagSet(appName, flag.ExitOnError)
 	return &runner{
-		appName:            appName,
-		flgSet:             flgSet,
-		debug:              false,
-		help:               false,
-		configFilePath:     "",
-		cnf:                config.NewConfig(),
-		commandHandler:     nil,
-		subCommandHandlers: make(map[string]CommandHandler),
+		appName:        appName,
+		flgSet:         flgSet,
+		debug:          false,
+		help:           false,
+		configFilePath: "",
+		cnf:            nil,
+		commandHandler: nil,
 	}
 }
 
@@ -76,12 +74,18 @@ func (r *runner) LoadFromCommandArgs(args []string) error {
 			}
 		})
 		if r.configFilePath != "" {
-			if err := r.cnf.LoadFromFile(r.configFilePath); err != nil {
+			cnf, err := config.LoadFromFile(r.configFilePath)
+			if err != nil {
 				return fmt.Errorf("while loading from config file: %w", err)
 			}
+			r.cnf = cnf
 		}
 	}
 	return nil
+}
+
+func (r *runner) SetCommandHandler(ch CommandHandler) {
+	r.commandHandler = ch
 }
 
 func (r *runner) buildHelpString() string {
@@ -97,14 +101,6 @@ func (r *runner) buildHelpString() string {
 	return sb.String()
 }
 
-func (r *runner) SetCommandHandler(ch CommandHandler) {
-	r.commandHandler = ch
-}
-
-func (r *runner) SetSubCommandHandler(subCommand string, ch CommandHandler) {
-	r.subCommandHandlers[subCommand] = ch
-}
-
 func (r *runner) Run() error {
 	if r.help {
 		fmt.Println(r.buildHelpString())
@@ -113,22 +109,14 @@ func (r *runner) Run() error {
 	if err := log.Init(r.debug); err != nil {
 		return err
 	}
+	if r.cnf == nil {
+		log.Fatal("config is not set")
+	}
 	log.Debugf("[Run] config: %+v", r.cnf)
-	subCommandArgs := r.args[1+r.flgSet.NFlag():] // NFlag is number of flags for root command
-	if len(subCommandArgs) == 0 {
-		if r.commandHandler == nil {
-			return errors.New("command handler is not set")
-		}
-		return r.commandHandler(r.cnf)
+	if r.commandHandler == nil {
+		return errors.New("command handler is not set")
 	}
-	if r.subCommandHandlers == nil {
-		return errors.New("subcommand handler is not set")
-	}
-	subCommand := subCommandArgs[0]
-	if _, ok := r.subCommandHandlers[subCommand]; !ok {
-		return fmt.Errorf("can not find subcommand: %s", subCommand)
-	}
-	return r.subCommandHandlers[subCommand](r.cnf)
+	return r.commandHandler(r.cnf)
 }
 
 // pathValue is defined to handle path type argument
@@ -143,7 +131,15 @@ func (pv *pathValue) String() string {
 
 // implements Value interface for flag argument
 func (pv *pathValue) Set(path string) error {
-	if _, err := os.Stat(path); err != nil {
+	absPath := path
+	if !filepath.IsAbs(path) {
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		absPath = filepath.Join(wd, path)
+	}
+	if _, err := os.Stat(absPath); err != nil {
 		return fmt.Errorf("not valid path %s: %w", path, err)
 	}
 	pv.path = path

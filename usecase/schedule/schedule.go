@@ -9,6 +9,16 @@ import (
 	"github.com/go-zen-chu/product-measurement/internal/config"
 )
 
+type JiraBoardList struct {
+	// 保存したいデータを書く
+	Values []JiraBoard
+}
+
+type JiraBoard struct {
+	ID int
+	Type string
+}
+
 func ImportJira(config *config.Config) error {
 	if config.Jira == nil {
 		return errors.New("JIRA config is empty")
@@ -35,6 +45,10 @@ func ImportJira(config *config.Config) error {
 		if err != nil {
 			return err
 		}
+		for _, b := range bl.Values {
+			b.ID
+		}
+
 
 		log.Printf("%+v", bl)
 		issue, _, err := jc.Issue.Get("TEST-1", nil)

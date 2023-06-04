@@ -6,8 +6,7 @@ import (
 	"github.com/go-zen-chu/product-measurement/internal/config"
 	"github.com/go-zen-chu/product-measurement/internal/log"
 	"github.com/go-zen-chu/product-measurement/internal/runner"
-	"github.com/go-zen-chu/product-measurement/usecase/kpi"
-	"github.com/go-zen-chu/product-measurement/usecase/schedule"
+	"github.com/go-zen-chu/product-measurement/usecase/importer"
 )
 
 func main() {
@@ -15,11 +14,9 @@ func main() {
 	if err := runner.LoadFromCommandArgs(os.Args); err != nil {
 		panic(err)
 	}
-	runner.SetSubCommandHandler("import-excel", func(c *config.Config) error {
-		return kpi.ImportExcel(c)
-	})
-	runner.SetSubCommandHandler("import-jira", func(c *config.Config) error {
-		return schedule.ImportJira(c)
+	runner.SetCommandHandler(func(c *config.Config) error {
+		uci := importer.NewUseCaseImporter(c)
+		return uci.UseCaseImportAll()
 	})
 	if err := runner.Run(); err != nil {
 		log.Fatal(err)
