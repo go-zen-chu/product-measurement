@@ -29,6 +29,7 @@ type JiraConfig struct {
 }
 
 type JiraAuth struct {
+	Method   string `yaml:"method"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 }
