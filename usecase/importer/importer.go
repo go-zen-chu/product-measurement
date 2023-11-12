@@ -1,16 +1,12 @@
 package importer
 
 import (
-	"errors"
+	"fmt"
 	"log"
-	"path/filepath"
-	"runtime"
 
+	"github.com/andygrunwald/go-jira"
 	"github.com/go-zen-chu/product-measurement/internal/config"
-	"github.com/xuri/excelize/v2"
 )
-
-var excelHandlers map[string]ExcelHandler
 
 type UseCaseImporter interface {
 	UseCaseImportAll() error
@@ -28,45 +24,45 @@ func NewUseCaseImporter(cnf *config.Config) UseCaseImporter {
 
 // Import from all datasources
 func (uci *useCaseImporter) UseCaseImportAll() error {
-	if uci.cnf.DataSources.Excel != nil {
-		excelHandlers = make(map[string]ExcelHandler)
-		for _, exCnf := range uci.cnf.DataSources.Excel.ExcelConfig {
-			excelHandlers[exCnf.Importer.Path] = ExcelHandler{
-				ExcelConfig: &exCnf,
+	if uci.cnf.DataSources.Jira != nil {
+		for _, jcnf := range uci.cnf.DataSources.Jira.JiraConfigs {
+			var jc *jira.Client
+			var err error
+			if jcnf.JiraAuth != nil {
+				switch jcnf.JiraAuth.Method {
+				case "basic":
+					tp := jira.BasicAuthTransport{
+						Username: jcnf.JiraAuth.User,
+						Password: jcnf.JiraAuth.Password,
+					}
+					jc, err = jira.NewClient(tp.Client(), jcnf.Endpoint)
+					if err != nil {
+						return fmt.Errorf("create new jira client: %w", err)
+					}
+				default:
+					return fmt.Errorf("unsupported method: %s", jcnf.JiraAuth.Method)
+				}
 			}
-			// run implemented importer
+			iss, _, err := jc.Issue.Search(fmt.Sprintf("project = %s AND issueType = Epic AND Status != Done", jcnf.Project), nil)
+			if err != nil {
+				return fmt.Errorf("search issue: %w", err)
+			}
+
+			bl, _, err := jc.Board.GetAllBoards(nil)
+			if err != nil {
+				return err
+			}
+			for _, b := range bl.Values {
+				b.ID
+			}
+
+			log.Printf("%+v", bl)
+			issue, _, err := jc.Issue.Get("TEST-1", nil)
+			if err != nil {
+				return fmt.Errorf("get issue: %w", err)
+			}
+			fmt.Printf("%s: %+v\n", issue.Key, issue.Fields.Summary)
 		}
 	}
 	return nil
-}
-
-type ExcelProcessStore func(f *excelize.File) error
-
-type ExcelHandler struct {
-	ExcelConfig *config.ExcelConfig
-}
-
-func (eh *ExcelHandler) Handle(eps ExcelProcessStore) error {
-	f, err := excelize.OpenFile(eh.ExcelConfig.Path)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			log.Fatalf("closing excel file: %s", err)
-		}
-	}()
-	return eps(f)
-}
-
-func GetExcelHandler() (*ExcelHandler, error) {
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		return nil, errors.New("could not identify caller")
-	}
-	fileName := filepath.Base(file)
-	// TBD
-	importerId := "excel/" + fileName
-	eh := excelHandlers[importerId]
-	return &eh, nil
 }

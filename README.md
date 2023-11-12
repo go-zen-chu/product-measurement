@@ -7,7 +7,7 @@ Measure, visualize all about your products.
 
 ## Design
 
-![](docs/design.drawio.svg)
+![arch](docs/architecture.drawio.svg)
 
 ## Install
 

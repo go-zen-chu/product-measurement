@@ -1,16 +1,16 @@
 datasources:
-  excel:
-    - name: "sample spreadsheet"
-      path: "testdata/excel/test.xlsx"
-      importer:
-        path: "importer/excel/sampleimporter.go"
   jira:
     # JIRA API might be multiple for handling multi projects
     - name: "sample project"
       endpoint: "xxx"
       project: "xxx"
       auth:
+        method: basic
         user: xxx
         password: yyyy
-      importer:
-        path: "importer/jira/sampleimporter.go"
+database:
+  type: mysql
+  host: localhost
+  auth:
+    user: root
+    password: root

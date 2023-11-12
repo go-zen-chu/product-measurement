@@ -2,9 +2,7 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"os"
-	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -12,29 +10,15 @@ import (
 // Config is global configuration for this application
 type Config struct {
 	DataSources *DataSources `yaml:"datasources"`
+	DataBase    *DataBase    `yaml:"database"`
 }
 
 type DataSources struct {
-	Excel *Excel `yaml:",inline"`
-	Jira  *Jira  `yaml:",inline"`
-}
-
-type Importer struct {
-	Path string `yaml:"path"`
-}
-
-type Excel struct {
-	ExcelConfig []ExcelConfig `yaml:"excel"`
-}
-
-type ExcelConfig struct {
-	Name     string    `yaml:"name"`
-	Path     string    `yaml:"path"`
-	Importer *Importer `yaml:"importer"`
+	Jira *Jira `yaml:",inline"`
 }
 
 type Jira struct {
-	JiraConfig []JiraConfig `yaml:"jira"`
+	JiraConfigs []JiraConfig `yaml:"jira"`
 }
 
 type JiraConfig struct {
@@ -49,43 +33,25 @@ type JiraAuth struct {
 	Password string `yaml:"password"`
 }
 
+type DataBase struct {
+	Type   string  `yaml:"type"`
+	Host   string  `yaml:"host"`
+	DBAuth *DBAuth `yaml:"auth"`
+}
+
+type DBAuth struct {
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+}
+
 func validateNormalizeConfig(configFilePath string, c *Config) error {
 	if c.DataSources == nil {
 		return errors.New("datasources must be specified, but got nil")
 	}
-	if c.DataSources.Excel != nil {
-		for _, exCnf := range c.DataSources.Excel.ExcelConfig {
-			if exCnf.Name == "" {
-				return errors.New("name must be specified")
-			}
-			p, err := getAbsPath(configFilePath, exCnf.Path)
-			if err != nil {
-				return fmt.Errorf("handling path of %s: %w", exCnf.Name, err)
-			}
-			exCnf.Path = p
-			if exCnf.Importer == nil {
-				return fmt.Errorf("importer must be specified for %s", exCnf.Name)
-			}
-			ip, err := getAbsPath(configFilePath, exCnf.Importer.Path)
-			if err != nil {
-				return fmt.Errorf("handling path of %s: %w", exCnf.Name, err)
-			}
-			exCnf.Importer.Path = ip
-		}
+	if c.DataBase == nil {
+		return errors.New("database must be specified, but got nil")
 	}
 	return nil
-}
-
-func getAbsPath(configFilePath string, targetPath string) (string, error) {
-	absPath := targetPath
-	if !filepath.IsAbs(targetPath) {
-		parent := filepath.Dir(configFilePath)
-		absPath = filepath.Join(parent, targetPath)
-	}
-	if _, err := os.Stat(absPath); err != nil {
-		return "", err
-	}
-	return absPath, nil
 }
 
 func LoadFromFile(filePath string) (*Config, error) {
