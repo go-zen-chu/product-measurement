@@ -1,0 +1,12 @@
+apiVersion: 1
+
+datasources:
+  - name: JSON Files
+    type: yesoreyeram-infinity-datasource
+    access: proxy
+    isDefault: true
+    jsonData:
+      url: http://json-server
+      auth_method: none
+    version: 1
+    editable: true

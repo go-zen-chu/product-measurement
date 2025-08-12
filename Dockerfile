@@ -1,15 +1,20 @@
-FROM golang:1.19.3-buster AS gobuilder
+FROM grafana/grafana:latest
 
-# use static link build
-ENV CGO_ENABLED=0
-ENV GOOS=linux
-ENV GOARCH=amd64
+USER root
 
-WORKDIR /usr/local/src/repo
-COPY . /usr/local/src/repo
-RUN go build ./cmd/db-setup
-RUN go build ./cmd/excel-importer
+RUN grafana-cli plugins install yesoreyeram-infinity-datasource
 
-FROM gcr.io/distroless/static-debian11:latest
+USER grafana
 
-COPY --from=gobuilder /usr/local/src/repo/db-setup /usr/bin/ 
+ENV GF_INSTALL_PLUGINS="yesoreyeram-infinity-datasource"
+ENV GF_PATHS_PROVISIONING="/etc/grafana/provisioning"
+ENV GF_SECURITY_ALLOW_EMBEDDING=true
+ENV GF_AUTH_ANONYMOUS_ENABLED=true
+
+RUN mkdir -p "$GF_PATHS_PROVISIONING/datasources" \
+    && mkdir -p "$GF_PATHS_PROVISIONING/dashboards"
+
+COPY ./provisioning/datasources /etc/grafana/provisioning/datasources/
+COPY ./provisioning/dashboards /etc/grafana/provisioning/dashboards/
+
+EXPOSE 3000

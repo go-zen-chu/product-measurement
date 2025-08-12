@@ -1,0 +1,27 @@
+services:
+  grafana:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dashboards:/var/lib/grafana/dashboards
+      - ./data:/var/lib/grafana/data
+    environment:
+      - GF_SECURITY_ADMIN_USER=adm
+      - GF_SECURITY_ADMIN_PASSWORD=adm
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - json-server
+    restart: unless-stopped
+
+  json-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
